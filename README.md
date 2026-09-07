@@ -1,58 +1,52 @@
 # ESP32 PC Control
 
-Управление на POWER и RESET бутоните на компютър през ESPHome и Home Assistant. Три оптрона PC817C свързват ESP32 с конектора за предния панел на дънната платка. Два имитират натискане на бутоните, а третият отчита състоянието на PWR_LED. Бутоните на кутията остават свързани и работят както досега.
+Control a PC's POWER and RESET buttons through ESPHome and Home Assistant. Three PC817C optocouplers connect an ESP32 to the motherboard's front panel header: two simulate button presses, and the third reads the power LED signal. The case buttons stay connected and work as usual.
 
-Използваните платки са **ESP32 HW-394 с USB-C и 30 пина** и **MSI MPG Z390I GAMING EDGE AC**. Описаното свързване към JFP1 е за тази дънна платка.
+This build uses an **ESP32 HW-394 with USB-C and 30 pins** and an **MSI MPG Z390I GAMING EDGE AC** motherboard. The JFP1 pin assignments below are specific to that motherboard.
 
-<img src="images/assembled-controller.png" alt="Сглобеният контролер на универсална платка с означени проводници към дънната платка" width="600">
+<img src="images/assembled-controller.png" alt="Assembled controller on perfboard with labelled wires for the motherboard connections" width="600">
 
-Монтажът е на универсална платка, с етикети на проводниците към предния панел. Снимката е с коригирани осветление и цветове.
+## Schematic and parts
 
-## Схема и компоненти
+[![Controller wiring diagram](images/schematic.svg)](images/schematic.svg)
 
-[![Схема на свързването](images/schematic.svg)](images/schematic.svg)
-
-[KiCad проект](kicad/esp32-pc-control/esp32-pc-control.kicad_pro) · [Файл на схемата](kicad/esp32-pc-control/esp32-pc-control.kicad_sch) · [ESPHome конфигурация](pc-control.yaml)
-
-ESP32 е представено със снимка в схемата. Връзките до него показват окабеляването, но не завършват в електрически пинове на KiCad символ. Схемата служи за монтаж; не е готов проект за производство на PCB.
+[KiCad project](kicad/esp32-pc-control/esp32-pc-control.kicad_pro) · [Schematic file](kicad/esp32-pc-control/esp32-pc-control.kicad_sch) · [ESPHome configuration](pc-control.yaml)
 
 <details>
-<summary>Използваната ESP32 платка</summary>
+<summary>ESP32 board used in this build</summary>
 
-<img src="images/esp32.png" alt="ESP32 HW-394 с USB-C и два реда по 15 пина" width="320">
-
-Снимката е обработена. За означенията на пиновете се води по реалната платка.
+<img src="images/esp32.png" alt="ESP32 HW-394 with USB-C and two rows of 15 pins" width="320">
 
 </details>
 
-| Количество | Компонент | Означение в схемата |
+| Quantity | Part | Schematic reference |
 |---:|---|---|
 | 1 | ESP32 HW-394 | — |
 | 3 | PC817C, DIP-4 | U1 — POWER, U2 — RESET, U3 — STATUS |
-| 2 | 470 Ω, ¼ W | R1, R3 — последователно на входовете на U1 и U2 |
-| 3 | 10 kΩ, ¼ W | R2, R4 — pull-down; R6 — pull-up |
-| 1 | 330 Ω, ¼ W | R5 — последователно на входа на U3 |
-| 1 | 100 nF, керамичен | C1 — филтриране на захранването |
-| 1 | 220–470 µF, електролитен, поне 10 V | C2 — филтриране на захранването |
-| 1 | Универсална платка, стъпка 2,54 mm | За монтаж |
-| според монтажа | Проводници и конектори | За връзките към ESP32 и дънната платка |
+| 2 | 470 Ω resistor | R1, R3 — series resistors for the U1 and U2 inputs |
+| 3 | 10 kΩ resistor | R2, R4 — pull-downs; R6 — pull-up |
+| 1 | 330 Ω resistor | R5 — series resistor for the U3 input |
+| 1 | 100 nF ceramic capacitor | C1 — supply filtering |
+| 1 | 220–470 µF electrolytic capacitor, rated for at least 10 V | C2 — supply filtering |
+| 1 | Perfboard, 2.54 mm pitch | For assembly |
+| As needed | Wire and connectors | Connections to the ESP32 and motherboard |
 
-R2 и R4 държат управляващите входове ниски, докато GPIO пиновете още не са конфигурирани. Ако не е нужен отделен RESET, каналът U2/R3/R4 може да се пропусне; тогава бутонът `PC Reset` в софтуера няма да има действие.
+R2 and R4 hold the control inputs low before the GPIO pins are configured. If a separate RESET connection is not needed, U2/R3/R4 can be omitted; the `PC Reset` button in the software will then have no effect.
 
-## Свързване
+## Wiring
 
-| GPIO | Функция |
+| GPIO | Function |
 |---|---|
-| GPIO27 | POWER през U1 |
-| GPIO26 | RESET през U2 |
-| GPIO25 | Състояние от PWR_LED през U3 |
-| GPIO2 | Вграденият син светодиод D2 |
+| GPIO27 | POWER through U1 |
+| GPIO26 | RESET through U2 |
+| GPIO25 | Power LED status through U3 |
+| GPIO2 | Built-in blue D2 LED |
 
-GPIO2 участва в избора на режим при стартиране на ESP32. На тази HW-394 платка към него вече е свързан D2; не добавяй външен pull-up или pull-down.
+GPIO2 is an ESP32 strapping pin, used to select the boot mode. D2 is already connected to it on this HW-394 board; do not add an external pull-up or pull-down.
 
 ### PC817C
 
-Пиновете са показани отгоре. Маркировката на корпуса е откъм пин 1.
+Top view. The package marking identifies pin 1.
 
 ```text
        _______
@@ -61,15 +55,15 @@ GPIO2 участва в избора на режим при стартиране
   2   |       |   3
       |_______|
 
-1 — анод       4 — колектор
-2 — катод      3 — емитер
+1 — Anode      4 — Collector
+2 — Cathode    3 — Emitter
 ```
 
-### JFP1 на MSI MPG Z390I GAMING EDGE AC
+### JFP1 on the MSI MPG Z390I GAMING EDGE AC
 
 ```text
       2       4       6       8      10
-    PLED+   PLED-   PWR_SW   GND    няма пин
+    PLED+   PLED-   PWR_SW   GND    No pin
       o       o       o       o       x
 
       o       o       o       o       o
@@ -77,106 +71,106 @@ GPIO2 участва в избора на режим при стартиране
     HDD+    HDD-    GND     RESET   Reserved
 ```
 
-Двойките са 2/4 за PWR_LED, 6/8 за POWER и 5/7 за RESET. Ориентацията на конектора е описана в ръководството на MSI, раздел `JFP1, JFP2: Front Panel Connectors`. Преди свързване потвърди с мултиметър масите на пинове 5 и 8.
+The pairs are 2/4 for PWR_LED, 6/8 for POWER, and 5/7 for RESET. Check the connector orientation in the MSI manual, under `JFP1, JFP2: Front Panel Connectors`. Confirm the ground connections on pins 5 and 8 with a multimeter before wiring.
 
-### POWER и RESET
+### POWER and RESET
 
-| Връзка | POWER — U1 | RESET — U2 |
+| Connection | POWER — U1 | RESET — U2 |
 |---|---|---|
-| GPIO → резистор → пин 1 | GPIO27 → R1, 470 Ω | GPIO26 → R3, 470 Ω |
-| Пин 2 | ESP32 GND | ESP32 GND |
-| Pull-down от GPIO към GND | R2, 10 kΩ | R4, 10 kΩ |
-| Пин 4 — колектор | JFP1 пин 6 | JFP1 пин 7 |
-| Пин 3 — емитер | JFP1 пин 8 | JFP1 пин 5 |
+| GPIO → resistor → pin 1 | GPIO27 → R1, 470 Ω | GPIO26 → R3, 470 Ω |
+| Pin 2 | ESP32 GND | ESP32 GND |
+| Pull-down from GPIO to GND | R2, 10 kΩ | R4, 10 kΩ |
+| Pin 4 — collector | JFP1 pin 6 | JFP1 pin 7 |
+| Pin 3 — emitter | JFP1 pin 8 | JFP1 pin 5 |
 
-Всеки оптрон се свързва паралелно на съответния бутон на кутията. При HIGH на GPIO оптронът провежда и имитира натискане на бутона.
+Each optocoupler connects in parallel with the corresponding case button. Driving the GPIO HIGH turns on the optocoupler and simulates a button press.
 
-### Статус от PWR_LED
+### Status from PWR_LED
 
 ```text
-JFP1 пин 2 (PLED+) ── R5, 330 Ω ── U3 пин 1
-JFP1 пин 4 (PLED−) ──────────────── U3 пин 2
+JFP1 pin 2 (PLED+) ── R5, 330 Ω ── U3 pin 1
+JFP1 pin 4 (PLED−) ──────────────── U3 pin 2
 
 ESP32 3V3 ── R6, 10 kΩ ──┬── GPIO25
-                         └── U3 пин 4
-ESP32 GND ────────────────── U3 пин 3
+                         └── U3 pin 4
+ESP32 GND ────────────────── U3 pin 3
 ```
 
-Когато PWR_LED свети, U3 дърпа GPIO25 към GND. В конфигурацията входът е с `inverted: true`, затова `PC Power State` показва ON при включен компютър. Има филтър от 100 ms и за двете промени на състоянието.
+When PWR_LED is active, U3 pulls GPIO25 to GND. The input uses `inverted: true`, so `PC Power State` reads ON when the PC is on. Both state transitions have a 100 ms filter.
 
-Ако PWR_LED мига в Sleep, статусът може да се сменя заедно с него. Отделно разпознаване на Sleep няма.
+If the motherboard blinks PWR_LED during sleep, the reported state may follow that blinking. The firmware does not detect sleep as a separate state.
 
-## Захранване
+## Power supply
 
-ESP32 трябва да остане захранено и при изключен компютър. Може да се използва USB-C източник, който остава включен, или дежурното **ATX +5VSB** към VIN. USB порт на самия компютър е подходящ само ако подава захранване и след изключване.
+The ESP32 must stay powered when the PC is off. Use an always-on USB-C supply, or connect the **ATX +5VSB** standby rail to VIN. A USB port on the PC is suitable only if it remains powered after shutdown.
 
-При стандартния 24-пинов ATX конектор +5VSB е пин 9, обикновено с лилав проводник:
+On a standard 24-pin ATX connector, +5VSB is pin 9, usually the purple wire:
 
 ```text
 ATX +5VSB ── ESP32 VIN / 5V
 ATX GND   ── ESP32 GND
 ```
 
-Това свързване е за развойната платка с VIN вход. **5 V не се подават към 3V3.**
+This connection is for the development board's VIN input. **Do not connect 5 V to 3V3.**
 
-C1 и C2 се свързват паралелно между VIN и GND, близо до ESP32. При C2 плюсът е към VIN, минусът — към GND. Керамичният C1 няма поляритет.
+Connect C1 and C2 in parallel between VIN and GND, close to the ESP32. C2's positive lead goes to VIN and its negative lead to GND. The ceramic C1 has no polarity.
 
-При захранване от ATX масите на ESP32 и компютъра са общи през захранването. Оптроните разделят сигналните връзки, но цялата система няма пълна галванична изолация.
+When powered from ATX, the ESP32 and PC share a ground through the power supply. The optocouplers separate the signal paths, but the complete system is not galvanically isolated.
 
-## Управление и индикация
+## Controls and indicators
 
-| Бутон / сензор | Действие |
+| Button / sensor | Behaviour |
 |---|---|
-| `PC Power` | Натиска POWER за 250 ms. Поведението при работещ компютър зависи от настройките на операционната система. |
-| `PC Reset` | Натиска RESET за 250 ms. |
-| `PC Force Off` | Задържа POWER за 4 s за принудително изключване. |
-| `PC Power Cycle` | Ако компютърът е включен, задържа POWER за 4 s, изчаква OFF до 10 s, после още 2 s и натиска POWER за 250 ms. Ако вече е изключен, изпраща само краткия импулс. |
-| `PC Power State` | Показва състоянието, отчетено от PWR_LED. |
+| `PC Power` | Presses POWER for 250 ms. On a running PC, the response depends on the operating system's power button settings. |
+| `PC Reset` | Presses RESET for 250 ms. |
+| `PC Force Off` | Holds POWER for 4 s to force a shutdown. |
+| `PC Power Cycle` | If the PC is on, holds POWER for 4 s, waits up to 10 s for OFF, waits another 2 s, then presses POWER for 250 ms. If the PC is already off, it only sends the short press. |
+| `PC Power State` | Reports the state read from PWR_LED. |
 
-При `PC Power Cycle` последният импулс се изпраща и ако изчакването за OFF изтече. Принудителното изключване и RESET могат да загубят незаписаната работа.
+`PC Power Cycle` sends the final press even if the wait for OFF times out. Forced shutdown and RESET can lose unsaved work.
 
-Синият D2 показва връзката и състоянието на компютъра:
+The blue D2 LED shows the connection and PC state:
 
-| Състояние | D2 |
+| State | D2 |
 |---|---|
-| Няма Wi-Fi | Мига през 250 ms |
-| Има Wi-Fi, компютърът е включен | Свети постоянно |
-| Има Wi-Fi, компютърът е изключен | Светва за 250 ms на всеки 2 s |
+| Wi-Fi disconnected | Alternates 250 ms on / 250 ms off |
+| Wi-Fi connected, PC on | Steady on |
+| Wi-Fi connected, PC off | Flashes for 250 ms every 2 s |
 
-Червеният PWR светодиод показва захранването и не се управлява от конфигурацията.
+The red PWR LED indicates board power and is not controlled by the firmware.
 
-## Настройка и флашване
+## Setup and flashing
 
-Нужен е инсталиран ESPHome. Създай `secrets.yaml` от [примерния файл](secrets.yaml.example), ако още нямаш такъв:
+Install ESPHome first. If you do not already have `secrets.yaml`, create it from the [example file](secrets.yaml.example):
 
 ```bash
 cp -n secrets.yaml.example secrets.yaml
 ```
 
-Попълни Wi-Fi данните и паролите за OTA, резервната Wi-Fi мрежа и уеб интерфейса. `secrets.yaml` е изключен от Git чрез `.gitignore`.
+Fill in your Wi-Fi credentials and passwords for OTA, the fallback Wi-Fi network, and the web interface. `secrets.yaml` is excluded from Git by `.gitignore`.
 
-Провери конфигурацията и качи фърмуера:
+Validate the configuration and flash the firmware:
 
 ```bash
 esphome config pc-control.yaml
 esphome run pc-control.yaml
 ```
 
-При първото качване свържи ESP32 по USB и избери неговия сериен порт, например `/dev/ttyUSB0` или `/dev/ttyACM0`. След това може да се обновява по Wi-Fi чрез OTA. За компилиране без качване:
+For the first flash, connect the ESP32 over USB and select its serial port, such as `/dev/ttyUSB0` or `/dev/ttyACM0`. Later updates can be sent over Wi-Fi using OTA. To compile without flashing:
 
 ```bash
 esphome compile pc-control.yaml
 ```
 
-Уеб интерфейсът е на **http://pc-control.local/**, с потребителя и паролата от `secrets.yaml`. Ако името не се разрешава в мрежата, използвай IP адреса на ESP32. За Home Assistant добави устройството през интеграцията ESPHome.
+The web interface is at **http://pc-control.local/**. Log in with the credentials from `secrets.yaml`. If the hostname does not resolve on your network, use the ESP32's IP address. In Home Assistant, add the device through the ESPHome integration.
 
-При проблем с Wi-Fi е настроена резервна мрежа `PC-Control-Fallback` с паролата `fallback_password`.
+A fallback network named `PC-Control-Fallback` is configured for Wi-Fi connection problems. Its password is set by `fallback_password`.
 
-В конфигурацията е зададено `api.reboot_timeout: 0s`, за да няма рестартиране заради липсваща API връзка с Home Assistant. Това не изключва отделните механизми за рестартиране при проблем с Wi-Fi.
+The configuration sets `api.reboot_timeout: 0s` so a missing Home Assistant API connection does not trigger a reboot. This does not disable the separate Wi-Fi reboot behaviour.
 
-### Ако ESPHome не намира `idf.py`
+### If ESPHome cannot find `idf.py`
 
-Старите променливи от друга ESP-IDF инсталация могат да пречат на компилирането. Изчисти ги за текущия терминал и опитай отново:
+Environment variables left over from another ESP-IDF installation can interfere with compilation. Clear them in the current terminal and try again:
 
 ```bash
 unset IDF_PATH
@@ -185,8 +179,8 @@ esphome clean pc-control.yaml
 esphome run pc-control.yaml
 ```
 
-## Първо пускане
+## First run
 
-Преди връзката към дънната платка провери ориентацията на оптроните и C2, липсата на късо между захранване и маса и дали GPIO27/GPIO26 остават LOW при стартиране.
+Before connecting to the motherboard, check the orientation of the optocouplers and C2, check for shorts between supply and ground, and verify that GPIO27/GPIO26 stay LOW during startup.
 
-След свързване тествай краткия POWER импулс, после RESET и показанието на `PC Power State` при включен и изключен компютър. Монтирай окончателно в кутията след тези проверки.
+Once connected, test a short POWER press, then RESET, and check `PC Power State` with the PC both on and off. Finish mounting the controller in the case after these checks.

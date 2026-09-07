@@ -1180,7 +1180,7 @@
 		)
 		(uuid "6a1ed0de-66eb-45b1-9003-d65f8bade022")
 	)
-	(text "Status imput from PWR_LED"
+	(text "Status input from PWR_LED"
 		(exclude_from_sim no)
 		(at 107.95 146.812 0)
 		(effects
@@ -1221,7 +1221,7 @@
 		)
 		(uuid "d5b8f2a8-2ad6-4c77-b3c8-f7406b360f40")
 	)
-	(text "Power Supply\n(not required when the USB-C port is used for power delivery)"
+	(text "Power Supply\n(optional when powered through USB-C)"
 		(exclude_from_sim no)
 		(at 164.084 37.592 0)
 		(effects
@@ -1232,7 +1232,7 @@
 		)
 		(uuid "e7690a70-634d-45d0-aeec-e07e142875d8")
 	)
-	(text "RESET (GPIO26)\n(not required, as you can use the power switch for a hard reset.)"
+	(text "RESET (GPIO26)\n(optional; POWER can be used to turn the PC off and on again)"
 		(exclude_from_sim no)
 		(at 163.576 104.902 0)
 		(effects
