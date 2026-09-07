@@ -2,7 +2,7 @@
 
 Control a PC's POWER and RESET buttons through ESPHome and Home Assistant. Three PC817C optocouplers connect an ESP32 to the motherboard's front panel header: two simulate button presses, and the third reads the power LED signal. The case buttons stay connected and work as usual.
 
-This build uses an **ESP32 HW-394 with USB-C and 30 pins** and an **MSI MPG Z390I GAMING EDGE AC** motherboard. The JFP1 pin assignments below are specific to that motherboard.
+This build uses an **ESP32 HW-394 with USB-C and 30 pins**. It connects to the motherboard's `PWR_SW`, `RESET_SW`, and `PWR_LED` front panel pins. Check your motherboard manual for their locations and polarity.
 
 <img src="images/assembled-controller.png" alt="Assembled controller on perfboard with labelled wires for the motherboard connections" width="600">
 
@@ -59,20 +59,6 @@ Top view. The package marking identifies pin 1.
 2 — Cathode    3 — Emitter
 ```
 
-### JFP1 on the MSI MPG Z390I GAMING EDGE AC
-
-```text
-      2       4       6       8      10
-    PLED+   PLED-   PWR_SW   GND    No pin
-      o       o       o       o       x
-
-      o       o       o       o       o
-      1       3       5       7       9
-    HDD+    HDD-    GND     RESET   Reserved
-```
-
-The pairs are 2/4 for PWR_LED, 6/8 for POWER, and 5/7 for RESET. Check the connector orientation in the MSI manual, under `JFP1, JFP2: Front Panel Connectors`. Confirm the ground connections on pins 5 and 8 with a multimeter before wiring.
-
 ### POWER and RESET
 
 | Connection | POWER — U1 | RESET — U2 |
@@ -80,16 +66,16 @@ The pairs are 2/4 for PWR_LED, 6/8 for POWER, and 5/7 for RESET. Check the conne
 | GPIO → resistor → pin 1 | GPIO27 → R1, 470 Ω | GPIO26 → R3, 470 Ω |
 | Pin 2 | ESP32 GND | ESP32 GND |
 | Pull-down from GPIO to GND | R2, 10 kΩ | R4, 10 kΩ |
-| Pin 4 — collector | JFP1 pin 6 | JFP1 pin 7 |
-| Pin 3 — emitter | JFP1 pin 8 | JFP1 pin 5 |
+| Pin 4 — collector | PWR_SW signal | RESET_SW signal |
+| Pin 3 — emitter | PWR_SW ground | RESET_SW ground |
 
 Each optocoupler connects in parallel with the corresponding case button. Driving the GPIO HIGH turns on the optocoupler and simulates a button press.
 
 ### Status from PWR_LED
 
 ```text
-JFP1 pin 2 (PLED+) ── R5, 330 Ω ── U3 pin 1
-JFP1 pin 4 (PLED−) ──────────────── U3 pin 2
+PWR_LED+ ── R5, 330 Ω ── U3 pin 1
+PWR_LED− ──────────────── U3 pin 2
 
 ESP32 3V3 ── R6, 10 kΩ ──┬── GPIO25
                          └── U3 pin 4
